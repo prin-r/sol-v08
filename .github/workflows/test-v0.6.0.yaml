@@ -4,8 +4,6 @@ on: push
 jobs:
   brownie:
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./src/v0.6.0
 
     steps:
     - name: Check out GitHub repository
@@ -48,11 +46,10 @@ jobs:
           ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
           ${{ runner.os }}-pip-
 
-    - name: Directory Check
-      run: ls -a
-
     - name: Install python dependencies
       run: pip install -r requirements-dev.txt
-  
+      working-directory: ./src/v0.6.0
+
     - name: Run tests
       run: brownie test tests/ -s --coverage
+      working-directory: ./src/v0.6.0
