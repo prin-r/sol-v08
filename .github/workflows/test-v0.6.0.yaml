@@ -48,6 +48,8 @@ jobs:
           ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
           ${{ runner.os }}-pip-
 
+    - name: Directory Check
+      run: ls -a
 
     - name: Install python dependencies
       run: pip install -r requirements-dev.txt
