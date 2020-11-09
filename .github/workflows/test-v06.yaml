@@ -52,5 +52,5 @@ jobs:
         working-directory: ./src/sol-v06
 
       - name: Run tests
-        run: brownie test tests/ -s --coverage
+        run: brownie test tests/ -s
         working-directory: ./src/sol-v06
