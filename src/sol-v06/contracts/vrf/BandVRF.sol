@@ -5,8 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import {IBridge} from "../../interfaces/bridge/IBridge.sol";
 import {Obi} from "../obi/Obi.sol";
-import {VRFParamsDecoder} from "./library/VRFParamsDecoder.sol";
-import {VRFResultDecoder} from "./library/VRFResultDecoder.sol";
+import {VRFDecoder} from "./library/VRFDecoder.sol";
 
 /// @title BandVRF contract
 /// @notice Contract for working with BandChain's verifiable random function feature
@@ -42,12 +41,8 @@ contract BandVRF {
         ) = _bridge.relayAndVerify(proof);
 
         // Decode the returned request's input parameters and response parameters
-        VRFParamsDecoder.Params memory params = VRFParamsDecoder.decodeParams(
-            req.params
-        );
-        VRFResultDecoder.Result memory result = VRFResultDecoder.decodeResult(
-            res.result
-        );
+        VRFDecoder.Params memory params = VRFDecoder.decodeParams(req.params);
+        VRFDecoder.Result memory result = VRFDecoder.decodeResult(res.result);
 
         return (params.seed, params.time, result.hash);
     }

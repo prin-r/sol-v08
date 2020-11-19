@@ -18,9 +18,10 @@ library MockResultDecoder {
         pure
         returns (Result memory result)
     {
-        Obi.Data memory data = Obi.from(_data);
-        result.symbol = string(data.decodeBytes());
-        result.multiplier = data.decodeU64();
-        result.what = data.decodeU8();
+        Obi.Data memory decoder = Obi.from(_data);
+        result.symbol = string(decoder.decodeBytes());
+        result.multiplier = decoder.decodeU64();
+        result.what = decoder.decodeU8();
+        require(decoder.finished(), "DATA_DECODE_NOT_FINISHED");
     }
 }

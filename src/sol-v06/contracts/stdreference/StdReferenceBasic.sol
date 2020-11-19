@@ -66,8 +66,9 @@ contract StdReferenceBasic is AccessControl, StdReferenceBase {
         }
     }
 
-    /// @notice Get the rate/price data for a given base/quote token pair
-    /// @
+    /// @notice Returns the price data for the given base/quote pair. Revert if not available.
+    /// @param base the base symbol of the token pair to query
+    /// @param quote the quote symbol of the token pair to query
     function getReferenceData(string memory base, string memory quote)
         public
         override
@@ -84,6 +85,8 @@ contract StdReferenceBasic is AccessControl, StdReferenceBase {
             });
     }
 
+    /// @notice Get the price data of a token
+    /// @param symbol the symbol of the token whose price to query
     function _getRefData(string memory symbol)
         internal
         view

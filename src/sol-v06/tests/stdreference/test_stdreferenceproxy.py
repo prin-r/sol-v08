@@ -1,6 +1,6 @@
 import pytest
 import brownie
-from brownie import accounts, StdReferenceBasic, StdReferenceProxy
+from brownie import accounts, chain, StdReferenceBasic, StdReferenceProxy
 import time
 
 INPUTS_VALID = [
@@ -24,7 +24,8 @@ def test_relay_success(
     stdrefbasic, stdrefproxy, symbols, rates, resolveTimes, requestIDs
 ):
     stdrefbasic.relay(symbols, rates, resolveTimes, requestIDs, {"from": accounts[0]})
-    ts = time.time()
+    chain.sleep(20)
+    ts = chain.time()
     for i in range(len(symbols)):
         stdRates = stdrefproxy.getReferenceData(symbols[i], "USD")
         assert stdRates[0] == rates[i] * 1e9
