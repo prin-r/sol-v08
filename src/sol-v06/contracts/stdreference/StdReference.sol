@@ -118,7 +118,7 @@ contract StdReference is AccessControl, StdReferenceBase {
         require(requestIDs.length == len, "BAD_REQUESTIDS_LENGTH");
         for (uint256 idx = 0; idx < len; idx++) {
             // Check pendingRefs that exceeded pendingDuration
-            if (_pendingRefReady(symbols[idx])) {
+            if (pendingRefReady(symbols[idx])) {
                 RefData memory pendingRef = pendingRefs[symbols[idx]];
 
                 // Use pendingRefs to update refs
@@ -167,7 +167,7 @@ contract StdReference is AccessControl, StdReferenceBase {
 
         // Check request oracle script is in oracleScriptIDs
         require(
-            _checkOracleScriptID(req.oracleScriptID),
+            checkOracleScriptID(req.oracleScriptID),
             "UNEXPECTED_ORACLE_SCRIPT_ID"
         );
 
@@ -213,8 +213,8 @@ contract StdReference is AccessControl, StdReferenceBase {
         view
         returns (ReferenceData memory)
     {
-        (uint256 baseRate, uint256 baseLastUpdate) = _getRefData(base);
-        (uint256 quoteRate, uint256 quoteLastUpdate) = _getRefData(quote);
+        (uint256 baseRate, uint256 baseLastUpdate) = getRefData(base);
+        (uint256 quoteRate, uint256 quoteLastUpdate) = getRefData(quote);
         return
             ReferenceData({
                 rate: (baseRate * 1e18) / quoteRate,
@@ -223,9 +223,9 @@ contract StdReference is AccessControl, StdReferenceBase {
             });
     }
 
-    /// @notice Get the price data of a token
+    /// @notice Get the latest usable price data of a token
     /// @param symbol the symbol of the token whose price to query
-    function _getRefData(string memory symbol)
+    function getRefData(string memory symbol)
         public
         view
         returns (uint256 rate, uint256 lastUpdate)
@@ -254,7 +254,7 @@ contract StdReference is AccessControl, StdReferenceBase {
         RefData memory candidateRef;
 
         // Use pendingRefs as candidate source if resolveTime is older than pendingDuration
-        if (_pendingRefReady(symbol)) {
+        if (pendingRefReady(symbol)) {
             candidateRef = pendingRefs[symbol];
         } else {
             candidateRef = refs[symbol];
@@ -273,7 +273,9 @@ contract StdReference is AccessControl, StdReferenceBase {
         return (uint256(candidateRef.rate), uint256(candidateRef.resolveTime));
     }
 
-    function _checkOracleScriptID(uint64 oid) internal view returns (bool) {
+    /// @notice Check if the input oracle script ID is in the list of valid IDs
+    /// @param oid The oracle script ID to query the validity of
+    function checkOracleScriptID(uint64 oid) internal view returns (bool) {
         for (uint256 idx = 0; idx < oracleScriptIDs.length; idx++) {
             if (oracleScriptIDs[idx] == oid) {
                 return true;
@@ -284,11 +286,7 @@ contract StdReference is AccessControl, StdReferenceBase {
 
     /// @notice Check if a token data in pendingRef is ready to be used
     /// @param symbol The symbol of the token to query the status of
-    function _pendingRefReady(string memory symbol)
-        internal
-        view
-        returns (bool)
-    {
+    function pendingRefReady(string memory symbol) public view returns (bool) {
         return (uint64(block.timestamp) - pendingRefs[symbol].resolveTime >=
             pendingDuration &&
             uint64(block.timestamp) - pendingRefs[symbol].relayTime >=
