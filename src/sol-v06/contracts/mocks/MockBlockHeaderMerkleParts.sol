@@ -10,14 +10,8 @@ import {
 contract MockBlockHeaderMerkleParts {
     function getBlockHeader(
         BlockHeaderMerkleParts.Data memory _self,
-        bytes32 _appHash,
-        uint256 _blockHeight
+        bytes32 _appHash
     ) public pure returns (bytes32) {
-        return
-            BlockHeaderMerkleParts.getBlockHeader(
-                _self,
-                _appHash,
-                _blockHeight
-            );
+        return BlockHeaderMerkleParts.getBlockHeader(_self, _appHash);
     }
 }

@@ -26,12 +26,14 @@ import {Utils} from "./Utils.sol";
 ///  [C] - evidence_hash         [D] - proposer_address
 ///
 /// Notice that NOT all leaves of the Merkle tree are needed in order to compute the Merkle
-/// root hash, since we only want to validate the correctness of [A] and [2]. In fact, only
-/// [1A], [3], [2B], [1E], [B], and [2D] are needed in order to compute [BlockHeader].
+/// root hash, since we only want to validate the correctness of [A], [2], and [3]. In fact, only
+/// [1A], [2B], [1E], [B], and [2D] are needed in order to compute [BlockHeader].
 library BlockHeaderMerkleParts {
     struct Data {
         bytes32 versionAndChainIdHash; // [1A]
-        bytes32 timeHash; // [3]
+        uint64 height; // [2]
+        uint64 timeSecond; // [3]
+        uint32 timeNanoSecond; // [3]
         bytes32 lastBlockIDAndOther; // [2B]
         bytes32 nextValidatorHashAndConsensusHash; // [1E]
         bytes32 lastResultsHash; // [B]
@@ -40,12 +42,11 @@ library BlockHeaderMerkleParts {
 
     /// @dev Returns the block header hash after combining merkle parts with necessary data.
     /// @param appHash The Merkle hash of BandChain application state.
-    /// @param blockHeight The height of this block.
-    function getBlockHeader(
-        Data memory self,
-        bytes32 appHash,
-        uint256 blockHeight
-    ) internal pure returns (bytes32) {
+    function getBlockHeader(Data memory self, bytes32 appHash)
+        internal
+        pure
+        returns (bytes32)
+    {
         return
             Utils.merkleInnerHash( // [BlockHeader]
                 Utils.merkleInnerHash( // [3A]
@@ -53,9 +54,14 @@ library BlockHeaderMerkleParts {
                         self.versionAndChainIdHash, // [1A]
                         Utils.merkleInnerHash( // [1B]
                             Utils.merkleLeafHash( // [2]
-                                Utils.encodeVarintUnsigned(blockHeight)
+                                Utils.encodeVarintUnsigned(self.height)
                             ),
-                            self.timeHash // [3]
+                            Utils.merkleLeafHash( // [3]
+                                Utils.encodeTime(
+                                    self.timeSecond,
+                                    self.timeNanoSecond
+                                )
+                            )
                         )
                     ),
                     self.lastBlockIDAndOther // [2B]

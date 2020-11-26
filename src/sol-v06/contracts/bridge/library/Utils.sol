@@ -54,4 +54,24 @@ library Utils {
         result[size - 1] &= bytes1(uint8(127)); // Drop the first bit of the last byte.
         return result;
     }
+
+    /// @dev Returns the encoded bytes follow how tendermint encode time.
+    function encodeTime(uint64 second, uint32 nanoSecond)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        bytes memory result = abi.encodePacked(
+            hex"08",
+            encodeVarintUnsigned(uint256(second))
+        );
+        if (nanoSecond > 0) {
+            result = abi.encodePacked(
+                result,
+                hex"10",
+                encodeVarintUnsigned(uint256(nanoSecond))
+            );
+        }
+        return result;
+    }
 }

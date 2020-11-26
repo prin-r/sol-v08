@@ -31,4 +31,12 @@ contract MockUtils {
     {
         return Utils.encodeVarintUnsigned(_value);
     }
+
+    function encodeTime(uint64 second, uint32 nanoSecond)
+        public
+        pure
+        returns (bytes memory)
+    {
+        return Utils.encodeTime(second, nanoSecond);
+    }
 }

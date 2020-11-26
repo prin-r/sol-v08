@@ -27,8 +27,14 @@ contract Bridge is IBridge, Ownable {
         uint256 power;
     }
 
-    /// Mapping from block height to the hash of "zoracle" iAVL Merkle tree.
-    mapping(uint256 => bytes32) public oracleStates;
+    struct BlockDetail {
+        bytes32 oracleState;
+        uint64 timeSecond;
+        uint32 timeNanoSecond;
+    }
+
+    /// Mapping from block height to the struct that contains block time and hash of "oracle" iAVL Merkle tree.
+    mapping(uint256 => BlockDetail) public blockDetails;
     /// Mapping from an address to its voting power.
     mapping(address => uint256) public validatorPowers;
     /// The total voting power of active validators currently on duty.
@@ -64,20 +70,18 @@ contract Bridge is IBridge, Ownable {
         }
     }
 
-    /// Relays a new oracle state to the bridge contract.
-    /// @param blockHeight The height of block to relay to this bridge contract.
+    /// Relays a detail of Bandchain block to the bridge contract.
     /// @param multiStore Extra multi store to compute app hash. See MultiStore lib.
     /// @param merkleParts Extra merkle parts to compute block hash. See BlockHeaderMerkleParts lib.
     /// @param signatures The signatures signed on this block, sorted alphabetically by address.
-    function relayOracleState(
-        uint256 blockHeight,
+    function relayBlock(
         MultiStore.Data memory multiStore,
         BlockHeaderMerkleParts.Data memory merkleParts,
         TMSignature.Data[] memory signatures
     ) public {
         bytes32 appHash = multiStore.getAppHash();
         // Computes Tendermint's block header hash at this given block.
-        bytes32 blockHeader = merkleParts.getBlockHeader(appHash, blockHeight);
+        bytes32 blockHeader = merkleParts.getBlockHeader(appHash);
         // Counts the total number of valid signatures signed by active validators.
         address lastSigner = address(0);
         uint256 sumVotingPower = 0;
@@ -92,7 +96,11 @@ contract Bridge is IBridge, Ownable {
             sumVotingPower.mul(3) > totalValidatorPower.mul(2),
             "INSUFFICIENT_VALIDATOR_SIGNATURES"
         );
-        oracleStates[blockHeight] = multiStore.oracleIAVLStateHash;
+        blockDetails[merkleParts.height] = BlockDetail({
+            oracleState: multiStore.oracleIAVLStateHash,
+            timeSecond: merkleParts.timeSecond,
+            timeNanoSecond: merkleParts.timeNanoSecond
+        });
     }
 
     /// Helper struct to workaround Solidity's "stack too deep" problem.
@@ -101,7 +109,7 @@ contract Bridge is IBridge, Ownable {
         bytes32 dataHash;
     }
 
-    /// Verifies that the given data is a valid data on BandChain as of the given block height.
+    /// Verifies that the given data is a valid data on BandChain as of the relayed block height.
     /// @param blockHeight The block height. Someone must already relay this block.
     /// @param requestPacket The request packet is this request.
     /// @param responsePacket The response packet of this request.
@@ -114,7 +122,7 @@ contract Bridge is IBridge, Ownable {
         uint256 version,
         IAVLMerklePath.Data[] memory merklePaths
     ) public view returns (RequestPacket memory, ResponsePacket memory) {
-        bytes32 oracleStateRoot = oracleStates[blockHeight];
+        bytes32 oracleStateRoot = blockDetails[blockHeight].oracleState;
         require(
             oracleStateRoot != bytes32(uint256(0)),
             "NO_ORACLE_ROOT_STATE_DATA"
@@ -165,9 +173,9 @@ contract Bridge is IBridge, Ownable {
             (bytes, bytes)
         );
         (bool relayOk, ) = address(this).call(
-            abi.encodePacked(this.relayOracleState.selector, relayData)
+            abi.encodePacked(this.relayBlock.selector, relayData)
         );
-        require(relayOk, "RELAY_ORACLE_STATE_FAILED");
+        require(relayOk, "RELAY_BLOCK_FAILED");
         (bool verifyOk, bytes memory verifyResult) = address(this).staticcall(
             abi.encodePacked(this.verifyOracleData.selector, verifyData)
         );
@@ -188,9 +196,9 @@ contract Bridge is IBridge, Ownable {
             (bytes, bytes[])
         );
         (bool relayOk, ) = address(this).call(
-            abi.encodePacked(this.relayOracleState.selector, relayData)
+            abi.encodePacked(this.relayBlock.selector, relayData)
         );
-        require(relayOk, "RELAY_ORACLE_STATE_FAILED");
+        require(relayOk, "RELAY_BLOCK_FAILED");
 
         RequestPacket[] memory requests = new RequestPacket[](
             manyVerifyData.length

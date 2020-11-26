@@ -39,3 +39,8 @@ def test_utils_encodevarintsigned_success(mockutils):
     assert encode == "0xe274"
     encode = mockutils.encodeVarintSigned("122469521")
     assert encode == "0xa2f2e574"
+
+
+def test_utils_encodetime_success(mockutils):
+    encode = mockutils.encodeTime("1605781207", "476745924")
+    assert encode == "0x08d78dd9fd0510c4a1aae301"

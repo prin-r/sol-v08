@@ -16,7 +16,7 @@ contract MockBridge is Bridge {
     function setOracleState(uint256 _blockHeight, bytes32 _oracleIAVLStateHash)
         public
     {
-        oracleStates[_blockHeight] = _oracleIAVLStateHash;
+        blockDetails[_blockHeight].oracleState = _oracleIAVLStateHash;
     }
 }
 
