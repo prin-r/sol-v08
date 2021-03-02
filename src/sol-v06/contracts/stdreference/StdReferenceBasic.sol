@@ -71,8 +71,8 @@ contract StdReferenceBasic is AccessControl, StdReferenceBase {
     /// @param quote the quote symbol of the token pair to query
     function getReferenceData(string memory base, string memory quote)
         public
-        override
         view
+        override
         returns (ReferenceData memory)
     {
         (uint256 baseRate, uint256 baseLastUpdate) = _getRefData(base);

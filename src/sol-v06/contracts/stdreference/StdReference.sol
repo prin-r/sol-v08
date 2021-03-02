@@ -8,9 +8,7 @@ import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
 import {IBridge} from "../../interfaces/bridge/IBridge.sol";
 import {Obi} from "../obi/Obi.sol";
 import {StdReferenceDecoder} from "./library/StdReferenceDecoder.sol";
-import {
-    StdReferenceBase
-} from "../../interfaces/stdreference/IStdReference.sol";
+import "../../interfaces/stdreference/IStdReference.sol";
 
 /// @title BandChain StdReferenceBasic
 /// @author Band Protocol Team
@@ -154,10 +152,8 @@ contract StdReference is AccessControl, StdReferenceBase {
     /// @notice Relay and save a set of price data to the contract using proof from Bandchain
     /// @param proof Aggregator oralce script request proof from BandChain
     function relayWithProof(bytes calldata proof) external {
-        (
-            IBridge.RequestPacket memory req,
-            IBridge.ResponsePacket memory res
-        ) = bridge.relayAndVerify(proof);
+        (IBridge.RequestPacket memory req, IBridge.ResponsePacket memory res) =
+            bridge.relayAndVerify(proof);
 
         // Check request ansCount >= specified
         require(res.ansCount >= ansCount, "MIN_ANS_COUNT_NOT_REACHED");
@@ -172,19 +168,20 @@ contract StdReference is AccessControl, StdReferenceBase {
         );
 
         // Decode request parameters and result fields
-        StdReferenceDecoder.Params memory params = StdReferenceDecoder
-            .decodeParams(req.params);
-        StdReferenceDecoder.Result memory result = StdReferenceDecoder
-            .decodeResult(res.result);
+        StdReferenceDecoder.Params memory params =
+            StdReferenceDecoder.decodeParams(req.params);
+        StdReferenceDecoder.Result memory result =
+            StdReferenceDecoder.decodeResult(res.result);
 
         for (uint256 idx = 0; idx < params.symbols.length; idx++) {
             string memory symbol = params.symbols[idx];
             if (res.resolveTime > verifiedRefs[symbol].resolveTime) {
-                uint64 rate = uint64(
-                    uint256(result.rates[idx]).mul(1e9).div(
-                        uint256(params.multiplier)
-                    )
-                );
+                uint64 rate =
+                    uint64(
+                        uint256(result.rates[idx]).mul(1e9).div(
+                            uint256(params.multiplier)
+                        )
+                    );
 
                 // Update pendingRefs using the request result
                 verifiedRefs[symbol] = RefData({
@@ -209,8 +206,8 @@ contract StdReference is AccessControl, StdReferenceBase {
     /// @param quote the quote symbol of the token pair to query
     function getReferenceData(string memory base, string memory quote)
         public
-        override
         view
+        override
         returns (ReferenceData memory)
     {
         (uint256 baseRate, uint256 baseLastUpdate) = getRefData(base);

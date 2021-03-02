@@ -27,8 +27,8 @@ contract StdReferenceProxy is Ownable, StdReferenceBase {
     /// @param quote The quote symbol of the token pair
     function getReferenceData(string memory base, string memory quote)
         public
-        override
         view
+        override
         returns (ReferenceData memory)
     {
         return ref.getReferenceData(base, quote);
