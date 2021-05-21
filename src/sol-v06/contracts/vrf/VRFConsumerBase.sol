@@ -13,7 +13,7 @@ abstract contract VRFConsumerBase is IVRFConsumer {
         uint64 time,
         bytes32 result
     ) external override {
-        require(msg.sender == address(provider));
+        require(msg.sender == address(provider), "Caller is not the provider");
         _consume(seed, time, result);
     }
 

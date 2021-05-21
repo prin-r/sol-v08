@@ -11,7 +11,7 @@ def test_vrf_request_by_consumer(vrf_provider, mock_vrf_consumer):
     # before request
     task = vrf_provider.tasks(key)
     assert task == (
-        "0x0000000000000000000000000000000000000000",
+        "0x" + ("0" * 40),
         0,
         False,
         "0x00",
@@ -29,6 +29,14 @@ def test_vrf_request_by_consumer(vrf_provider, mock_vrf_consumer):
         False,
         "0x00",
     )
+
+
+def test_consume_fail_not_the_provider(mock_vrf_consumer):
+    fake_result = "a" * 64
+    with brownie.reverts("Caller is not the provider"):
+        mock_vrf_consumer.consume(
+            INPUT_SEED_TIME[0][0], INPUT_SEED_TIME[0][1], fake_result, {"from": accounts[1]}
+        )
 
 
 def test_vrf_request_relay_consume_fail_task_not_found(vrf_provider, testnet_vrf_proof):
@@ -75,7 +83,7 @@ def test_vrf_request_relay_consume_success(vrf_provider, mock_vrf_consumer, test
     )
     assert tx.status == 1
 
-    # check relayer balance
+    # relayer must receive the bounty
     assert accounts[2].balance() == account2_prev_balance + BOUNTY
 
     key = vrf_provider.getKey(mock_vrf_consumer.address, *INPUT_SEED_TIME[0])

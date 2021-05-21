@@ -95,7 +95,7 @@ def test_request_random_data(vrf_provider, seed, time):
 
     task = vrf_provider.tasks(key)
     assert task == (
-        "0x0000000000000000000000000000000000000000",
+        "0x" + ("0" * 40),
         0,
         False,
         "0x00",
