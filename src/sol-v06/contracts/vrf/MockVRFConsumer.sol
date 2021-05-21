@@ -15,9 +15,16 @@ contract MockVRFConsumer is VRFConsumerBase {
     }
 
     function requestRandomDataFromProvider(string calldata seed, uint64 time)
-        public
+        external
+        payable
     {
-        provider.requestRandomData(seed, time);
+        address(provider).call.value(msg.value)(
+            abi.encodeWithSignature(
+                "requestRandomData(string,uint64)",
+                seed,
+                time
+            )
+        );
     }
 
     function _consume(
@@ -25,6 +32,8 @@ contract MockVRFConsumer is VRFConsumerBase {
         uint64 time,
         bytes32 result
     ) internal override {
-        // revert("Unimplemented");
+        latestSeed = seed;
+        latestTime = time;
+        latestResult = result;
     }
 }

@@ -76,7 +76,7 @@ contract VRFProvider is IVRFProvider, Ownable {
         address caller,
         string memory seed,
         uint64 time
-    ) internal pure returns (bytes32) {
+    ) public pure returns (bytes32) {
         return keccak256(abi.encode(caller, seed, time));
     }
 
@@ -95,8 +95,10 @@ contract VRFProvider is IVRFProvider, Ownable {
         override
     {
         bytes32 taskKey = getKey(msg.sender, seed, time);
-        require(tasks[taskKey].caller == address(0), "Task already existed");
-        tasks[taskKey] = Task(msg.sender, msg.value, false, 0);
+        Task storage task = tasks[taskKey];
+        require(task.caller == address(0), "Task already existed");
+        task.caller = msg.sender;
+        task.bounty = msg.value;
         emit RandomDataRequested(msg.sender, seed, time, taskKey, msg.value);
     }
 
