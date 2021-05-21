@@ -4,6 +4,7 @@ from brownie import accounts, MockVRFConsumer
 
 INPUT_SEED_TIME = [("mumu1", 12345678)]
 BOUNTY = 999
+EXPECTED_RESULT = "0xab28fb90b6c2826017165c85ad7f6eb982b72173e6fbb1913c0a3b1b5d54cc3d"
 
 
 def test_vrf_request_by_consumer(vrf_provider, mock_vrf_consumer):
@@ -92,15 +93,12 @@ def test_vrf_request_relay_consume_success(vrf_provider, mock_vrf_consumer, test
         mock_vrf_consumer.address,
         BOUNTY,
         True,
-        "0xab28fb90b6c2826017165c85ad7f6eb982b72173e6fbb1913c0a3b1b5d54cc3d",
+        EXPECTED_RESULT,
     )
 
     assert mock_vrf_consumer.latestSeed() == INPUT_SEED_TIME[0][0]
     assert mock_vrf_consumer.latestTime() == INPUT_SEED_TIME[0][1]
-    assert (
-        mock_vrf_consumer.latestResult()
-        == "0xab28fb90b6c2826017165c85ad7f6eb982b72173e6fbb1913c0a3b1b5d54cc3d"
-    )
+    assert mock_vrf_consumer.latestResult() == EXPECTED_RESULT
 
 
 def test_vrf_request_relay_consume_fail_task_already_resolved(
