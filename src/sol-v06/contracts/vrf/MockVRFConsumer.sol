@@ -10,6 +10,14 @@ contract MockVRFConsumer is VRFConsumerBase {
     uint64 public latestTime;
     bytes32 public latestResult;
 
+    event RandomDataRequested(
+        address provider,
+        string seed,
+        uint64 time,
+        uint256 bounty
+    );
+    event Consume(string seed, uint64 time, bytes32 result);
+
     constructor(IVRFProvider _provider) public {
         provider = _provider;
     }
@@ -19,6 +27,8 @@ contract MockVRFConsumer is VRFConsumerBase {
         payable
     {
         provider.requestRandomData{value: msg.value}(seed, time);
+
+        emit RandomDataRequested(provider, seed, time, msg.value);
     }
 
     function _consume(
@@ -29,5 +39,7 @@ contract MockVRFConsumer is VRFConsumerBase {
         latestSeed = seed;
         latestTime = time;
         latestResult = result;
+
+        emit Consume(seed, time, result);
     }
 }
