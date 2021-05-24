@@ -18,15 +18,7 @@ contract MockVRFConsumer is VRFConsumerBase {
         external
         payable
     {
-        (bool ok, ) =
-            address(provider).call{value: msg.value}(
-                abi.encodeWithSignature(
-                    "requestRandomData(string,uint64)",
-                    seed,
-                    time
-                )
-            );
-        require(ok, "Fail to requestRandomData from provider");
+        provider.requestRandomData{value: msg.value}(seed, time);
     }
 
     function _consume(
