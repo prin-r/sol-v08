@@ -28,7 +28,7 @@ contract MockVRFConsumer is VRFConsumerBase {
     {
         provider.requestRandomData{value: msg.value}(seed, time);
 
-        emit RandomDataRequested(provider, seed, time, msg.value);
+        emit RandomDataRequested(address(provider), seed, time, msg.value);
     }
 
     function _consume(
