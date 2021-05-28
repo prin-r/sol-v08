@@ -4,6 +4,7 @@ pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IBridge} from "../../interfaces/bridge/IBridge.sol";
 import {IVRFProvider} from "../../interfaces/vrf/IVRFProvider.sol";
 import {IVRFConsumer} from "../../interfaces/vrf/IVRFConsumer.sol";
@@ -13,11 +14,14 @@ import {VRFDecoder} from "./library/VRFDecoder.sol";
 /// @notice Contract for working with BandChain's verifiable random function feature
 contract VRFProvider is IVRFProvider, Ownable {
     using VRFDecoder for bytes;
+    using Address for address;
 
     IBridge public bridge;
     uint256 public oracleScriptID;
     uint256 public minCount;
     uint256 public askCount;
+
+    mapping(bytes32 => Task) public tasks;
 
     event RandomDataRequested(
         address caller,
@@ -40,8 +44,6 @@ contract VRFProvider is IVRFProvider, Ownable {
         bool isResolved;
         bytes32 result;
     }
-
-    mapping(bytes32 => Task) public tasks;
 
     constructor(
         IBridge _bridge,
@@ -80,15 +82,6 @@ contract VRFProvider is IVRFProvider, Ownable {
         return keccak256(abi.encode(caller, seed, time));
     }
 
-    // Check if an address is contract
-    function isContract(address addr) internal view returns (bool) {
-        uint256 size;
-        assembly {
-            size := extcodesize(addr)
-        }
-        return size > 0;
-    }
-
     function requestRandomData(string calldata seed, uint64 time)
         external
         payable
@@ -125,7 +118,7 @@ contract VRFProvider is IVRFProvider, Ownable {
         bytes32 resultHash = keccak256(result.hash);
 
         // End function by call consume function on VRF consumer with data from BandChain
-        if (isContract(to)) {
+        if (to.isContract()) {
             IVRFConsumer(task.caller).consume(
                 params.seed,
                 params.time,
