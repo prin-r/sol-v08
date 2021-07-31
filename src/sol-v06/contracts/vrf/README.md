@@ -46,27 +46,8 @@ The figures below illustrates the interaction of each actor
 
 1. The user requesting random data by calling `requestRandomDataFromProvider` function from the `MockVRFConsumer`.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    User->>MockVRFConsumer(contract):requestRandomDataFromProvider<br>(seed,time) with bounty in ETH
-    MockVRFConsumer(contract)->>VRFProvider(contract): requestRandomData<br>(seed, time) with bounty in ETH
-    Note left of VRFProvider(contract): Inside requestRandomData<br>2.1 Create new a task<br>2.2 Using getKey(user address, seed, time) to generate task key.<br>2.3 Store the task in to the mapping(bytes32 => Task)<br>2.4 Emit event RandomDataRequested(user address, seed, time, taskKey, bounty)
-```
+![step1](https://user-images.githubusercontent.com/12705423/127733726-780b626c-b0c1-4c66-80bb-5923d3c10333.png)
 
 2. The bounty hunter pick up an event emitted by the previous step. After that, the bounty hunter creates a request according to the event's params on Band's chain in order to retrieve the random data with proof from Band and then send it to the `VRFProvider` contract on Ethereum.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    Bounty Hunter->>VRFProvider(contract):relayProof<br>(to,proof)
-    Note left of VRFProvider(contract): `to` is the address of MockVRFConsumer<br>`proof` is a proof of existence of the random data on Band
-    VRFProvider(contract)->>MockBridgeForVRF(contract): relayAndVerify(proof)
-    MockBridgeForVRF(contract)->>MockBridgeForVRF(contract): Verify the proof and extract the request's result from the proof
-    MockBridgeForVRF(contract)->>VRFProvider(contract):return the extracted result back
-    VRFProvider(contract)->>VRFProvider(contract): Check the specs of the request by using params from the extracted result
-    VRFProvider(contract)->>MockVRFConsumer(contract): consume<br>(seed, time, resultHash)
-    VRFProvider(contract)->>VRFProvider(contract): Mark the task as resolved (task.isResolved = true)
-    VRFProvider(contract)->>Bounty Hunter:transfer(task.bounty)
-    Note right of Bounty Hunter: Pay bounty to the hunter
-```
+![step2](https://user-images.githubusercontent.com/12705423/127733734-5b0c79bc-4c09-43f8-9708-9d9075f3bbe6.png)
