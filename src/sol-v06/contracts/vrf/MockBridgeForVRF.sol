@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: Apache-2.0
 
 pragma solidity ^0.6.0;
@@ -13,6 +14,20 @@ import {IBridge} from "../../interfaces/bridge/IBridge.sol";
 contract MockBridgeForVRF is IBridge {
     using IAVLMerklePath for IAVLMerklePath.Data;
 
+    struct MockPacket {
+        string clientID;
+        uint64 oracleScriptID;
+        bytes params;
+        uint64 askCount;
+        uint64 minCount;
+        uint64 requestID;
+        uint64 ansCount;
+        uint64 requestTime;
+        uint64 resolveTime;
+        uint8 resolveStatus;
+        bytes result;
+    }
+
     /// Performs oracle state relay and oracle data verification in one go. The caller submits
     /// the encoded proof and receives back the decoded data, ready to be validated and used.
     /// @param data The encoded data for oracle state relay and data verification.
@@ -21,28 +36,39 @@ contract MockBridgeForVRF is IBridge {
         override
         returns (RequestPacket memory, ResponsePacket memory)
     {
-        (bytes memory _relayData, bytes memory verifyData) =
-            abi.decode(data, (bytes, bytes));
+        (bytes memory _relayData, bytes memory verifyData) = abi.decode(
+            data,
+            (bytes, bytes)
+        );
 
         (
             uint256 _blockHeight,
-            RequestPacket memory requestPacket,
-            ResponsePacket memory responsePacket,
+            MockPacket memory mp,
             uint256 _version,
             IAVLMerklePath.Data[] memory _merklePaths
-        ) =
-            abi.decode(
+        ) = abi.decode(
                 verifyData,
-                (
-                    uint256,
-                    RequestPacket,
-                    ResponsePacket,
-                    uint256,
-                    IAVLMerklePath.Data[]
-                )
+                (uint256, MockPacket, uint256, IAVLMerklePath.Data[])
             );
 
-        return (requestPacket, responsePacket);
+        RequestPacket memory req;
+        ResponsePacket memory res;
+
+        req.clientID = mp.clientID;
+        req.oracleScriptID = mp.oracleScriptID;
+        req.params = mp.params;
+        req.askCount = mp.askCount;
+        req.minCount = mp.minCount;
+
+        res.clientID = mp.clientID;
+        res.requestID = mp.requestID;
+        res.ansCount = mp.ansCount;
+        res.requestTime = mp.requestTime;
+        res.resolveTime = mp.resolveTime;
+        res.resolveStatus = mp.resolveStatus;
+        res.result = mp.result;
+
+        return (req, res);
     }
 
     /// Performs oracle state relay and many times of oracle data verification in one go. The caller submits
