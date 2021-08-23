@@ -1,0 +1,22 @@
+import pytest
+from brownie import accounts, MockMultiStore
+
+
+@pytest.fixture(scope="module")
+def mockmultistore():
+    return accounts[0].deploy(MockMultiStore)
+
+
+def test_multistore_getapphash(mockmultistore):
+    app_hash = mockmultistore.getAppHash(
+        [
+            "0x7FA9321529B99458C89F4B1B1626B2C2C04C41EB0E47FCBD2FBA7EA78B9D65D7",
+            "0xAE7F0418BCE8C09D2C33B981A6EA261BA330C75D88DC1637A452BCC65C5AE8C1",
+            "0x98FCDC7C08F480BE7A8268A07B8635333D902847EC0EA5606F33D43A2E936C0E",
+            "0xE0004F2B2DDAB5F19E2027F8CDE6CBE7FC2A0B7BFA2EF48BB614F8591113CBF0",
+            "0xEF14C7E1F5EDCD25AB616E394B6ED8961F66ED2BC363607B50FCF3BA2760C6F8",
+        ]
+    )
+    assert (
+        app_hash == "0xE500B3DD21816EE04BE5E77271EC0D8286B8AFF81EF96344FED74B52992E6D23"
+    )

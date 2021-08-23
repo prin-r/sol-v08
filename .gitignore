@@ -1,2 +1,7 @@
 /node_modules
 /.vscode
+.DS_Store
+.deps
+build
+__pycache__/
+artifacts/

@@ -10,6 +10,7 @@ Currently, we support the following Solidity version
 | 0.5.x   | TBA                        |
 | 0.6.x   | [src/sol-v06](src/sol-v06) |
 | 0.7.x   | TBA                        |
+| 0.8.x   | [src/sol-v08](src/sol-v08) |
 
 ## Contracts
 
