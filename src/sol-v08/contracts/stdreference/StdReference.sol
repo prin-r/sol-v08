@@ -105,7 +105,7 @@ contract StdReference is AccessControl, StdReferenceBase {
     /// @notice Relay and save a set of price data to the contract
     /// @dev All of the lists must be of equal length
     /// @param symbols A list of symbols whose data is being relayed in this function call
-    /// @param rates A list of the rates associated with each symbol
+    /// @param rates A list of the rates associated with each symbol (w/ multiplier as 10^9)
     /// @param resolveTimes A list of timestamps of when the rate data was retrieved
     /// @param requestIDs A list of BandChain request IDs in which the rate data was retrieved
     function relay(

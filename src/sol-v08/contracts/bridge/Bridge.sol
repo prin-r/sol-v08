@@ -160,20 +160,8 @@ contract Bridge is IBridge, Ownable {
             "NO_ORACLE_ROOT_STATE_DATA"
         );
 
-        // Encode abd calculate hash of count
-        bytes memory encodedCount = abi.encodePacked(
-                ProtobufLib.encode_key(
-                    1,
-                    uint64(ProtobufLib.WireType.Varint)
-                ),
-                ProtobufLib.encode_uint64(uint64(count))
-        );
-        bytes32 dataHash = sha256(
-            abi.encodePacked(
-                Utils.encodeVarintUnsigned(encodedCount.length),
-                encodedCount
-            )
-        );
+        // Encode and calculate hash of count
+        bytes32 dataHash = sha256(abi.encodePacked(uint64(count)));
 
         // Verify proof
         require(
