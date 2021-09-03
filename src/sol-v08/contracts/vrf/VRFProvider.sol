@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.4;
+pragma abicoder v2;
 
 import {IBridge} from "../../interfaces/bridge/IBridge.sol";
 import {VRFProviderBase} from "./VRFProviderBase.sol";

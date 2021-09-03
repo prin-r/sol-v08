@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.4;
+pragma abicoder v2;
 
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {IBridge} from "../../interfaces/bridge/IBridge.sol";
@@ -60,7 +60,7 @@ abstract contract VRFProviderBase is IVRFProvider, Ownable {
         uint256 _oracleScriptID,
         uint256 _minCount,
         uint256 _askCount
-    ) public {
+    ) {
         bridge = _bridge;
         oracleScriptID = _oracleScriptID;
         minCount = _minCount;
@@ -164,20 +164,21 @@ abstract contract VRFProviderBase is IVRFProvider, Ownable {
     }
 
     function relayProof(bytes calldata proof) external {
-        (
-            IBridge.RequestPacket memory req,
-            IBridge.ResponsePacket memory res
-        ) = bridge.relayAndVerify(proof);
+        IBridge.Result memory res = bridge.relayAndVerify(proof);
 
         // check oracle script id, min count, ask count
         require(
-            req.oracleScriptID == oracleScriptID,
+            res.oracleScriptID == oracleScriptID,
             "Oracle Script ID not match"
         );
-        require(req.minCount == minCount, "Min Count not match");
-        require(req.askCount == askCount, "Ask Count not match");
+        require(res.minCount == minCount, "Min Count not match");
+        require(res.askCount == askCount, "Ask Count not match");
+        require(
+            res.resolveStatus == IBridge.ResolveStatus.RESOLVE_STATUS_SUCCESS,
+            "Request not successfully resolved"
+        );
 
-        VRFDecoder.Params memory params = req.params.decodeParams();
+        VRFDecoder.Params memory params = res.params.decodeParams();
 
         Task storage task = tasks[params.seed];
         require(task.caller != address(0), "Task not found");
@@ -198,7 +199,7 @@ abstract contract VRFProviderBase is IVRFProvider, Ownable {
         // Save result and mark resolve to this task
         task.result = resultHash;
         task.isResolved = true;
-        msg.sender.transfer(task.bounty);
+        payable(msg.sender).transfer(task.bounty);
         emit RandomDataRelayed(
             task.caller,
             task.clientSeed,

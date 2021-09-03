@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.6.0;
+pragma solidity 0.8.4;
+pragma abicoder v2;
 
 /// @title IVRFProvider interface
 /// @notice Interface for the BandVRF provider

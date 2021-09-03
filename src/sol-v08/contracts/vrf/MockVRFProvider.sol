@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.4;
+pragma abicoder v2;
 
 import {IBridge} from "../../interfaces/bridge/IBridge.sol";
 import {VRFProviderBase} from "./VRFProviderBase.sol";
@@ -12,7 +12,7 @@ contract MockVRFProvider is VRFProviderBase {
         uint256 _oracleScriptID,
         uint256 _minCount,
         uint256 _askCount
-    ) public VRFProviderBase(_bridge, _oracleScriptID, _minCount, _askCount) {}
+    ) VRFProviderBase(_bridge, _oracleScriptID, _minCount, _askCount) {}
 
     function getBlockTime() public view override returns (uint64) {
         return uint64(1628591365);

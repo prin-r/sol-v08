@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.6.0;
+pragma solidity 0.8.4;
 
 import {IVRFProvider} from "../../interfaces/vrf/IVRFProvider.sol";
 import {VRFConsumerBase} from "./VRFConsumerBase.sol";
@@ -13,7 +13,7 @@ contract MockVRFConsumer is VRFConsumerBase {
     event RandomDataRequested(address provider, string seed, uint256 bounty);
     event Consume(string seed, uint64 time, bytes32 result);
 
-    constructor(IVRFProvider _provider) public {
+    constructor(IVRFProvider _provider) {
         provider = _provider;
     }
 
