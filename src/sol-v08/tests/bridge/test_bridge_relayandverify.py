@@ -26,7 +26,7 @@ def test_bridge_relayandverify_bridgeinfo_success(bridgeinfo):
 
 
 def test_bridge_relay_request_clientid(bridgeinfo_relayed):
-    assert bridgeinfo_relayed.ClientID() == "from_scan"
+    assert bridgeinfo_relayed.ClientID() == ""
 
 
 def test_bridge_relayandverify_request_oraclescriptid(bridgeinfo_relayed):
@@ -36,7 +36,7 @@ def test_bridge_relayandverify_request_oraclescriptid(bridgeinfo_relayed):
 def test_bridge_relayandverify_request_params(bridgeinfo_relayed):
     assert (
         bridgeinfo_relayed.params()
-        == "0x0000000342544300000000000f4240"
+        == "0x000000010000000342544300000000000186a0"
     )
 
 
@@ -59,24 +59,22 @@ def test_bridge_relayandverify_anscount(bridgeinfo_relayed):
 def test_bridge_relayandverify_request_time(bridgeinfo_relayed):
     ts = time.time()
     assert bridgeinfo_relayed.requestTime() < ts
-    assert bridgeinfo_relayed.requestTime() == 1622111198
+    assert bridgeinfo_relayed.requestTime() == 1629803667
 
 
 def test_bridge_relayandverify_resolve_time(bridgeinfo_relayed):
     ts = time.time()
     assert bridgeinfo_relayed.resolveTime() < ts
     assert bridgeinfo_relayed.resolveTime() > bridgeinfo_relayed.requestTime()
-    assert bridgeinfo_relayed.resolveTime() == 1622111200
+    assert bridgeinfo_relayed.resolveTime() == 1629803671
 
 
 def test_bridge_relayandverify_resolve_status(bridgeinfo_relayed):
-    ts = time.time()
     assert bridgeinfo_relayed.resolveStatus() == 1
 
 
 def test_bridge_relayandverify_resolve_status(bridgeinfo_relayed):
-    ts = time.time()
     assert (
         bridgeinfo_relayed.result()
-        == "0x000000092b6826f2"
+        == "0x000000010000000124ec078c"
     )
