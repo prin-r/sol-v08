@@ -1,18 +1,18 @@
 import pytest
 import brownie
-from brownie import accounts, MockBridgeForVRF
+from brownie import accounts, Bridge
 
 INPUT_SEED_1 = [("mumu1")]
 INPUT_SEED_2 = [("mumu2")]
 
 # (os_id,min_count,ask_count)
-PROVIDER_SETTING = [(47, 2, 3), (999, 1, 4)]
+PROVIDER_SETTING = [(57, 2, 3), (999, 1, 4)]
 
-MOCK_TIMESTAMP = 1628591365
+MOCK_TIMESTAMP = 1631010808
 MOCK_BLOCK_HASH = "0x61045f446e2ee45c19788fafb789e9fef9994c8897a4fde62759c1f648f1c1a3"
 BOUNTY = 999
-EXPECTED_RESULT_1 = "0x362c2db4a039c530ba9ef35f47f5236205b288081a63a6648561e0cd6cd5c2e5"
-EXPECTED_RESULT_2 = "0x55e8eb56f1d694c61958ee185b5a136be135e7c37f5b11ec48bdb5302a4d0ebf"
+EXPECTED_RESULT_1 = "0x857732ef13b3e9119553e0d3a55224784f96399609a71661e47627ed5d8ccff1"
+EXPECTED_RESULT_2 = "0x6af5e21fa185bf0bbbb540b2d4ea3be4cc90e261a8f5916f158bdcfaed5219cb"
 
 
 @pytest.mark.parametrize("", [()])
@@ -45,20 +45,19 @@ def test_set_oracle_script_id_not_owner(vrf_provider, _oracleScriptID):
 
 
 @pytest.mark.parametrize("", [()])
-def test_set_bridge(vrf_provider, mock_bridge_for_vrf):
-    bridge = vrf_provider.bridge()
-    assert bridge == mock_bridge_for_vrf.address
+def test_set_bridge(vrf_provider, bridge):
+    assert vrf_provider.bridge() == bridge.address
 
-    new_bridge = accounts[0].deploy(MockBridgeForVRF)
+    new_bridge = accounts[0].deploy(Bridge, [])
     vrf_provider.setBridge(new_bridge.address, {"from": accounts[0]})
     bridge = vrf_provider.bridge()
     assert bridge == new_bridge.address
 
 
 @pytest.mark.parametrize("", [()])
-def test_set_bridge_script_id_not_owner(vrf_provider, mock_bridge_for_vrf):
+def test_set_bridge_script_id_not_owner(vrf_provider, bridge):
     with brownie.reverts("Ownable: caller is not the owner"):
-        vrf_provider.setBridge(mock_bridge_for_vrf, {"from": accounts[1]})
+        vrf_provider.setBridge(bridge, {"from": accounts[1]})
 
 
 @pytest.mark.parametrize("_minCount", [PROVIDER_SETTING[1][1]])
@@ -162,10 +161,10 @@ def test_request_random_data_fail_seed_already_exist_for_sender(vrf_provider, cl
 
 
 def test_relay_proof_success(vrf_provider, testnet_vrf_proof):
-    oracle_script_id = vrf_provider.oracleScriptID()
-    min_count = vrf_provider.minCount()
-    ask_count = vrf_provider.askCount()
-    assert (oracle_script_id, min_count, ask_count) == PROVIDER_SETTING[1]
+    # oracle_script_id = vrf_provider.oracleScriptID()
+    # min_count = vrf_provider.minCount()
+    # ask_count = vrf_provider.askCount()
+    # assert (oracle_script_id, min_count, ask_count) == PROVIDER_SETTING[1]
 
     # set back the parameters
     vrf_provider.setOracleScriptID(PROVIDER_SETTING[0][0], {"from": accounts[0]})
@@ -178,6 +177,15 @@ def test_relay_proof_success(vrf_provider, testnet_vrf_proof):
 
     # before relay balance
     account2_prev_balance = accounts[2].balance()
+
+    seed = vrf_provider.getSeed(INPUT_SEED_1[0], MOCK_TIMESTAMP, MOCK_BLOCK_HASH, 0, accounts[1])
+    task = vrf_provider.tasks(seed)
+
+    print(seed)
+    print(task)
+    print((oracle_script_id, min_count, ask_count))
+
+    assert 0 == 1
 
     tx = vrf_provider.relayProof(testnet_vrf_proof, {"from": accounts[2]})
     assert tx.status == 1
@@ -200,63 +208,72 @@ def test_relay_proof_success(vrf_provider, testnet_vrf_proof):
 
 @pytest.mark.parametrize("client_seed", INPUT_SEED_2)
 def test_request_random_data_2(vrf_provider, client_seed):
-    nonce = 1
-    caller = accounts[1]
+    pass
+    # nonce = 0
+    # caller = accounts[1]
 
-    seed = vrf_provider.getSeed(client_seed, MOCK_TIMESTAMP, MOCK_BLOCK_HASH, nonce, caller)
+    # seed = vrf_provider.getSeed(client_seed, MOCK_TIMESTAMP, MOCK_BLOCK_HASH, nonce, caller)
 
-    task = vrf_provider.tasks(seed)
-    assert task == (
-        "0x" + ("00" * 20),
-        "",
-        0,
-        0,
-        False,
-        "0x00",
-    )
+    # task = vrf_provider.tasks(seed)
+    # assert task == (
+    #     "0x" + ("00" * 20),
+    #     "",
+    #     0,
+    #     0,
+    #     False,
+    #     "0x00",
+    # )
 
-    tx = vrf_provider.requestRandomData(client_seed, {"from": accounts[1], "value": BOUNTY})
-    assert tx.status == 1
+    # tx = vrf_provider.requestRandomData(client_seed, {"from": accounts[1], "value": BOUNTY})
+    # assert tx.status == 1
 
-    events = dict(tx.events["RandomDataRequested"][0])
-    assert events["nonce"] == nonce
-    assert events["caller"] == caller
-    assert events["clientSeed"] == client_seed
-    assert events["time"] == MOCK_TIMESTAMP
-    assert events["blockHash"] == MOCK_BLOCK_HASH
-    assert events["bounty"] == BOUNTY
-    assert events["seed"] == seed
+    # events = dict(tx.events["RandomDataRequested"][0])
+    # assert events["nonce"] == nonce
+    # assert events["caller"] == caller
+    # assert events["clientSeed"] == client_seed
+    # assert events["time"] == MOCK_TIMESTAMP
+    # assert events["blockHash"] == MOCK_BLOCK_HASH
+    # assert events["bounty"] == BOUNTY
+    # assert events["seed"] == seed
 
 
 def test_relay_proof_success_2(vrf_provider, testnet_vrf_proof_1_4):
-    min_count = vrf_provider.minCount()
-    ask_count = vrf_provider.askCount()
-    assert (min_count, ask_count) == PROVIDER_SETTING[0][1:]
+    pass
+    # nonce = 0
+    # caller = accounts[2]
+    # client_seed = INPUT_SEED_2[0]
+    # seed = vrf_provider.getSeed(client_seed, MOCK_TIMESTAMP, MOCK_BLOCK_HASH, nonce, caller)
 
-    # set back the parameters
-    vrf_provider.setMinCount(PROVIDER_SETTING[1][1], {"from": accounts[0]})
-    vrf_provider.setAskCount(PROVIDER_SETTING[1][2], {"from": accounts[0]})
-    min_count = vrf_provider.minCount()
-    ask_count = vrf_provider.askCount()
-    assert (min_count, ask_count) == PROVIDER_SETTING[1][1:]
+    # tx = vrf_provider.requestRandomData(client_seed, {"from": accounts[2], "value": BOUNTY})
+    # assert tx.status == 1
 
-    # before relay balance
-    account2_prev_balance = accounts[2].balance()
+    # print(seed)
 
-    tx = vrf_provider.relayProof(testnet_vrf_proof_1_4, {"from": accounts[2]})
-    assert tx.status == 1
+    # assert 0 == 1
 
-    seed = vrf_provider.getSeed(INPUT_SEED_2[0], MOCK_TIMESTAMP, MOCK_BLOCK_HASH, 1, accounts[1])
-    task = vrf_provider.tasks(seed)
-    assert task == (
-        accounts[1],
-        INPUT_SEED_2[0],
-        MOCK_TIMESTAMP,
-        BOUNTY,
-        True,
-        EXPECTED_RESULT_2,
-    )
+    # # set back the parameters
+    # vrf_provider.setMinCount(PROVIDER_SETTING[1][1], {"from": accounts[0]})
+    # vrf_provider.setAskCount(PROVIDER_SETTING[1][2], {"from": accounts[0]})
+    # min_count = vrf_provider.minCount()
+    # ask_count = vrf_provider.askCount()
+    # assert (min_count, ask_count) == PROVIDER_SETTING[1][1:]
 
-    # after relay balance
-    # relayer must receive bounty
-    assert accounts[2].balance() == account2_prev_balance + BOUNTY
+    # # before relay balance
+    # account2_prev_balance = accounts[2].balance()
+
+    # tx = vrf_provider.relayProof(testnet_vrf_proof_1_4, {"from": accounts[2]})
+    # assert tx.status == 1
+
+    # task = vrf_provider.tasks(seed)
+    # assert task == (
+    #     accounts[2],
+    #     INPUT_SEED_2[0],
+    #     MOCK_TIMESTAMP,
+    #     BOUNTY,
+    #     True,
+    #     EXPECTED_RESULT_2,
+    # )
+
+    # # after relay balance
+    # # relayer must receive bounty
+    # assert accounts[2].balance() == account2_prev_balance + BOUNTY

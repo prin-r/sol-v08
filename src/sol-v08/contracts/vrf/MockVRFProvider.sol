@@ -15,7 +15,7 @@ contract MockVRFProvider is VRFProviderBase {
     ) VRFProviderBase(_bridge, _oracleScriptID, _minCount, _askCount) {}
 
     function getBlockTime() public view override returns (uint64) {
-        return uint64(1628591365);
+        return uint64(1631010808);
     }
 
     function getBlockLatestHash() public view override returns (bytes32) {
